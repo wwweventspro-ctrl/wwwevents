@@ -32,7 +32,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type, teamName, captainEmail, captainPhone, tournamentName, prix } = req.body;
+    const { type, teamName, captainEmail, captainPhone, tournamentName, prix, contactName, contactEmail, contactMessage } =
+      req.body;
+
+    if (type === "contact_message") {
+      await sendResendEmail({
+        to: NOTIFY_EMAIL,
+        subject: `Nouveau message de contact — ${contactName}`,
+        html: `
+          <div style="font-family:sans-serif;line-height:1.6">
+            <h2>Nouveau message via le formulaire de contact</h2>
+            <p><strong>Nom :</strong> ${contactName}</p>
+            <p><strong>Email :</strong> ${contactEmail}</p>
+            <p><strong>Message :</strong></p>
+            <p>${(contactMessage || "").replace(/\n/g, "<br/>")}</p>
+          </div>
+        `,
+      });
+      res.status(200).json({ ok: true });
+      return;
+    }
 
     if (type === "new_registration") {
       // ⚠️ Email de confirmation au capitaine — DÉSACTIVÉ pour l'instant.
